@@ -1,0 +1,190 @@
+﻿@page "/euromilhoes"
+
+<PageTitle>Simulador EuroMilhões</PageTitle>
+
+<div class="container">
+    <h1>Simulador <img class="logo" src="/euromilhoes.svg" /></h1>
+
+    <div class="simulation-container">
+        <div class="settings col-6 pe-3 d-flex flex-column align-items-center">
+            <label class="form-label" for="year-mult">Tempo: <span class="label-desc"><strong>@_yearMult</strong> @(_yearMult > 1 ? "anos" : "ano")</span></label>
+            <input class="form-control" id="year-mult" type="range" min="1" max="50" step="1" @bind-value="_yearMult" @bind-value:event="oninput" />
+            <div class="form-check mt-3">
+                <input class="form-check-input" id="cumulative" type="checkbox" @bind-value="_isCumulative" checked="@_isCumulative" />
+                <label class="form-check-label" for="cumulative">Cumulativo</label>
+            </div>
+            <button type="button" class="simulate-btn btn btn-primary" @onclick="async () => await SimulateBatch(_yearlyDraws * _yearMult, _baseNums, _baseStars)">Simular</button>
+            <div class="stats">
+                <span>Números: <h3>@($"{_baseNums} / {_nums}")</h3></span>
+                <span>Estrelas: <h3>@($"{_baseStars} / {_stars}")</h3></span>
+                <span>Preço p/ Aposta: <h3>@_baseFee.ToString("C2")</h3></span>
+                <span>Prémios:<br /> <a href="https://www.euro-millions.com/pt/premios">Montantes Médios</a></span>
+                <br />
+                <span>Sorteios p/ Ano: <h3>@($"{_yearlyDraws}")</h3><small>2 p/ Semana</small></span>
+                <br />
+                <br />
+                <small>De momento não consideramos apostas múltipas para sorteio simulado.</small>
+            </div>
+        </div>
+        <div class="col-6 ps-3">
+            @if (_simulatedPrizes.Count > 0)
+            {
+                <ul class="list-group">
+                    @foreach (var draw in _simulatedPrizes)
+                    {
+                        <li class="list-group-item @(GetPrizeTextColor(draw.Key, draw.Value))">@(string.IsNullOrEmpty(draw.Key) ? "Não Premiado" : draw.Key):  <strong class="ms-3">@(draw.Value)</strong></li>
+                    }
+                </ul>
+                <br />
+                <h2><small>Total Gastos:</small> @_totalSpent.ToString("C2")</h2>
+                <h2><small>Total Prémios:</small> @_totalEarnings.ToString("C2")</h2>
+                if (_isCumulative)
+                {
+                    <h2><small>Anos Simulados:</small> @_currentYear</h2>
+                }
+
+            }
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>A probabilidade de ganhar o Jackpot do EuroMilhões é de 1 em 139.838.160, mas para o comum dos mortais é difícil ter noção do que isso significa na prática. <br />Com um simples gerador de números aleatórios é possível demonstrar quantitativamente como os jogos da sorte estão projectados contra o ganho do apostador.</p>
+
+        <figure>
+            <blockquote class="blockquote">
+                <p>
+                    "A Lottery is a Taxation,<br/>
+                    Upon all the Fools in Creation;<br/>
+                    And Heaven be prais’d,<br/>
+                    It is easily rais’d,<br/>
+                    Credulity’s always in Fashion:<br/>
+                    For, Folly’s a Fund,<br/>
+                    Will never lose Ground,<br/>
+                    While Fools are so rife in the Nation."<br/>
+
+                </p>
+            </blockquote>
+            <figcaption class="blockquote-footer">
+                Henry Fielding
+            </figcaption>
+        </figure>
+
+        <span class="disclaimer">Este site não armazena qualquer tipo de dados introduzidos. Os cálculos são processados pelo próprio dispositivo do utilizador.</span>
+    </div>
+
+</div>
+
+@code {
+    private Dictionary<string, double> _prizes = new()
+    {
+        {"5+2", 65808286.22}, {"5+1", 423564.19 }, {"5+0", 51601.71}, {"4+2", 2569.57}, {"4+1", 149.78}, {"3+2", 87.09}, {"4+0", 51.05}, {"2+2", 17.36}, {"3+1", 13.11 }, {"3+0", 10.89}, {"1+2", 8.87}, {"2+1", 6.90}, {"2+0", 4.18}, {string.Empty, 0}
+    };
+    private int _nums = 50;
+    private int _stars = 12;
+    private int _baseNums = 5;
+    private int _baseStars = 2;
+    private double _baseFee = 2.5;
+    private List<int> _numMult = new() { 1, 6, 21, 56, 126, 252, 462 };
+    private List<int> _starMult = new() { 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66 };
+    private int _yearlyDraws = 104;
+    private int _yearMult = 1;
+
+    // < winningKey, entryKey >
+    private Dictionary<EMKeyModel, EMKeyModel> _simulatedDraws = new();
+    private Dictionary<string, int> _simulatedPrizes = new();
+    private double _totalEarnings;
+    private double _totalSpent;
+    private int _currentYear;
+    private bool _isCumulative;
+
+    private EMKeyModel GenerateKey(int numbers, int stars)
+    {
+        var key = new EMKeyModel();
+        var rnd = new Random();
+        var numMult = _numMult[numbers - _baseNums];
+        var starMult = _starMult[stars - _baseStars];
+
+        key.Fee = _baseFee * numMult * starMult;
+        key.Numbers = GenerateRandomList(numbers, _nums);
+        key.Stars = GenerateRandomList(stars, _stars);
+        return key;
+    }
+
+    private List<int> GenerateRandomList(int amount, int maxValue)
+    {
+        var rnd = new Random();
+        return Enumerable.Range(1, maxValue).OrderBy(x => rnd.Next()).Take(amount).ToList();
+    }
+
+    private async Task SimulateBatch(int amount, int numbers, int stars)
+    {
+        ResetVariables();
+        _currentYear += _yearMult;
+
+        for (int i = 0; i < amount; i++)
+        {
+            await SimulateDraw(numbers, stars);
+        }
+
+        CalculateEarnings();
+        _simulatedPrizes = CountPrizes();
+    }
+
+    private async Task SimulateDraw(int numbers, int stars, EMKeyModel? entry = null)
+    {
+        var winningKey = GenerateKey(_baseNums, _baseStars);
+        var entryKey = entry ?? GenerateKey(numbers, stars);
+
+        var matchedNumbers = winningKey.Numbers.Intersect(entryKey.Numbers).ToArray();
+        var matchedStars = winningKey.Stars.Intersect(entryKey.Stars).ToArray();
+
+        var prizeString = $"{matchedNumbers.Count()}+{matchedStars.Count()}";
+
+        if (_prizes.ContainsKey(prizeString)) entryKey.Prize = prizeString;
+        else entryKey.Prize = string.Empty;
+
+        _simulatedDraws.Add(winningKey, entryKey);
+    }
+
+    private Dictionary<string, int> CountPrizes()
+    {
+        Dictionary<string, int> prizes;
+
+        if (_isCumulative && _simulatedPrizes.Count > 1) prizes = _simulatedPrizes;
+        else
+        {
+            prizes = new Dictionary<string, int>();
+            foreach (var prize in _prizes) { prizes.Add(prize.Key, 0); }
+        }
+
+        foreach (var draw in _simulatedDraws) { prizes[draw.Value.Prize]++; }
+
+        return prizes;
+    }
+
+    private void CalculateEarnings()
+    {
+        foreach (var draw in _simulatedDraws)
+        {
+            _totalEarnings += _prizes[draw.Value.Prize];
+            _totalSpent += draw.Value.Fee;
+        }
+    }
+
+    private void ResetVariables(bool reset = false)
+    {
+        _simulatedDraws.Clear();
+
+        if (_isCumulative && !reset) return;
+
+        _simulatedPrizes.Clear();
+        _totalEarnings = _totalSpent = _currentYear = 0;
+    }
+
+    private string GetPrizeTextColor(string prize, int amount)
+    {
+        if (prize == string.Empty) return "nao-premio";
+        if (amount > 0) return "premio";
+        return string.Empty;
+    }
+}
