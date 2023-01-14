@@ -151,7 +151,7 @@
         {
             bool hasJackpot = false;
             int currentDraw = 0;
-            Console.WriteLine(DateTime.Now);
+            var startTime = DateTime.Now;
             do
             {
                 var entry = await SimulateDraw(numbers, stars);
@@ -163,7 +163,9 @@
                     Console.WriteLine($"Ano: {_currentYear} | Sorteio: {currentDraw}");
                 }
             } while (!hasJackpot);
-            Console.WriteLine(DateTime.Now);
+            var finishTime = DateTime.Now;
+            Console.WriteLine($"Começo: {startTime}");
+            Console.WriteLine($"Fim: {finishTime}");
         }
 
         CalculateEarnings();
