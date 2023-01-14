@@ -35,6 +35,11 @@ small[b-8u7jb5zrsw] {
 	font-size: 2rem;
 }
 
+	.simulate-btn:disabled[b-8u7jb5zrsw] {
+		background: #555;
+		border: 1px solid #888;
+	}
+
 .form-label[b-8u7jb5zrsw] {
 	color: #888;
 }
