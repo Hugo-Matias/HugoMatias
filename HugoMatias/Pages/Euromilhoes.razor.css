@@ -34,6 +34,11 @@ small {
 	font-size: 2rem;
 }
 
+	.simulate-btn:disabled {
+		background: #555;
+		border: 1px solid #888;
+	}
+
 .form-label {
 	color: #888;
 }

@@ -13,7 +13,7 @@
                 <input class="form-check-input" id="cumulative" type="checkbox" @bind-value="_isCumulative" checked="@_isCumulative" />
                 <label class="form-check-label" for="cumulative">Cumulativo</label>
             </div>
-            <button type="button" class="simulate-btn btn btn-primary" @onclick="async () => await SimulateBatch(_yearlyDraws * _yearMult, _baseNums, _baseStars)">Simular</button>
+            <button type="button" class="simulate-btn btn btn-primary" @onclick="HandleSimulateClick" disabled="@_isSimulating">Simular</button>
             <div class="stats row">
                 <div class="col-sm-6 col">
                     <span>Números: <h3>@($"{_baseNums} / {_nums}")</h3></span>
@@ -52,7 +52,7 @@
     </div>
 
     <div class="footer">
-        <p>A probabilidade de ganhar o Jackpot do EuroMilhões é de 1 em 139.838.160, mas para o comum dos mortais é difícil ter noção do que isso significa na prática. <br />Com um simples gerador de números aleatórios é possível demonstrar quantitativamente como os jogos da sorte estão projectados contra o ganho do apostador.</p>
+        <p>A probabilidade de ganhar o Jackpot do EuroMilhões é de 1 em 139.838.160, mas para o comum dos mortais é difícil ter noção do que isso significa na prática. <br />Com um simples gerador de números aleatórios é possível demonstrar quantitativamente como os jogos da sorte estão projectados contra o apostador.</p>
 
         <figure>
             <blockquote class="blockquote">
@@ -100,8 +100,9 @@
     private double _totalSpent;
     private int _currentYear;
     private bool _isCumulative;
+    private bool _isSimulating;
 
-    private EMKeyModel GenerateKey(int numbers, int stars)
+    private async Task<EMKeyModel> GenerateKey(int numbers, int stars)
     {
         var key = new EMKeyModel();
         var rnd = new Random();
@@ -109,19 +110,27 @@
         var starMult = _starMult[stars - _baseStars];
 
         key.Fee = _baseFee * numMult * starMult;
-        key.Numbers = GenerateRandomList(numbers, _nums);
-        key.Stars = GenerateRandomList(stars, _stars);
+        key.Numbers = await GenerateRandomList(numbers, _nums);
+        key.Stars = await GenerateRandomList(stars, _stars);
         return key;
     }
 
-    private List<int> GenerateRandomList(int amount, int maxValue)
+    private Task<List<int>> GenerateRandomList(int amount, int maxValue)
     {
         var rnd = new Random();
-        return Enumerable.Range(1, maxValue).OrderBy(x => rnd.Next()).Take(amount).ToList();
+        return Task<List<int>>.Run(() => Enumerable.Range(1, maxValue).OrderBy(x => rnd.Next()).Take(amount).ToList());
+    }
+
+    private async Task HandleSimulateClick()
+    {
+        _isSimulating = true;
+        await InvokeAsync(StateHasChanged);
+        await SimulateBatch(_yearlyDraws * _yearMult, _baseNums, _baseStars);
     }
 
     private async Task SimulateBatch(int amount, int numbers, int stars)
     {
+
         ResetVariables();
         _currentYear += _yearMult;
 
@@ -131,13 +140,14 @@
         }
 
         CalculateEarnings();
-        _simulatedPrizes = CountPrizes();
+        _simulatedPrizes = await CountPrizes();
+        _isSimulating = false;
     }
 
     private async Task SimulateDraw(int numbers, int stars, EMKeyModel? entry = null)
     {
-        var winningKey = GenerateKey(_baseNums, _baseStars);
-        var entryKey = entry ?? GenerateKey(numbers, stars);
+        var winningKey = await GenerateKey(_baseNums, _baseStars);
+        var entryKey = entry ?? await GenerateKey(numbers, stars);
 
         var matchedNumbers = winningKey.Numbers.Intersect(entryKey.Numbers).ToArray();
         var matchedStars = winningKey.Stars.Intersect(entryKey.Stars).ToArray();
@@ -150,7 +160,7 @@
         _simulatedDraws.Add(winningKey, entryKey);
     }
 
-    private Dictionary<string, int> CountPrizes()
+    private async Task<Dictionary<string, int>> CountPrizes()
     {
         Dictionary<string, int> prizes;
 
