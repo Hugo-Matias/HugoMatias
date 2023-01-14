@@ -8,7 +8,7 @@
     <div class="simulation-container">
         <div class="settings col-md-6 col pe-3 d-flex flex-column align-items-center">
             <label class="form-label" for="year-mult">Tempo: <span class="label-desc"><strong>@_yearMult</strong> @(_yearMult > 1 ? "anos" : "ano")</span></label>
-            <input class="form-range" id="year-mult" type="range" min="1" max="50" step="1" @bind-value="_yearMult" @bind-value:event="oninput" />
+            <input class="form-range" id="year-mult" type="range" min="1" max="@_maxYears" step="1" @bind-value="_yearMult" @bind-value:event="oninput" />
             <div class="form-check mt-3">
                 <input class="form-check-input" id="cumulative" type="checkbox" @bind-value="_isCumulative" checked="@_isCumulative" />
                 <label class="form-check-label" for="cumulative">Cumulativo</label>
@@ -92,6 +92,7 @@
     private List<int> _starMult = new() { 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66 };
     private int _yearlyDraws = 104;
     private int _yearMult = 1;
+    private int _maxYears = 10;
 
     // < winningKey, entryKey >
     private Dictionary<EMKeyModel, EMKeyModel> _simulatedDraws = new();
