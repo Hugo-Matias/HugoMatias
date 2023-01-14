@@ -94,12 +94,16 @@ figure[b-8u7jb5zrsw] {
 		text-align: center;
 	}
 
-.nao-premio[b-8u7jb5zrsw] {
+.stats-no-prize[b-8u7jb5zrsw] {
 	color: red;
 }
 
-.premio[b-8u7jb5zrsw] {
+.stats-prize[b-8u7jb5zrsw] {
 	color: var(--site-primary);
+}
+
+.stats-total[b-8u7jb5zrsw] {
+	color: orange;
 }
 
 .stats[b-8u7jb5zrsw] {
@@ -130,6 +134,14 @@ figure[b-8u7jb5zrsw] {
 		margin-top: 1.3rem;
 		font-size: 0.8rem;
 	}
+
+.show[b-8u7jb5zrsw] {
+	opacity: 1;
+}
+
+.hide[b-8u7jb5zrsw] {
+	opacity: 0;
+}
 
 .list-swipe-info[b-8u7jb5zrsw] {
 	display: none;
@@ -207,7 +219,7 @@ figure[b-8u7jb5zrsw] {
     position: relative;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+/*    height: 100vh;*/
 }
 
 main[b-u622xn50qo] {
