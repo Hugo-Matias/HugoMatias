@@ -111,6 +111,7 @@ figure {
 	.stats h3 {
 		color: var(--site-color);
 		font-style: italic;
+		margin-bottom: 1.2rem;
 	}
 
 	.stats a {
@@ -120,8 +121,13 @@ figure {
 	}
 
 	.stats small {
+		margin-top: 1.3rem;
 		font-size: 0.8rem;
 	}
+
+.list-swipe-info {
+	display: none;
+}
 
 @media(max-width: 1050px) {
 	.simulate-btn {
@@ -130,11 +136,58 @@ figure {
 	}
 
 	.simulation-container {
-		flex-direction: column-reverse;
 		width: 90%
 	}
 
 	.settings {
 		margin-top: 3rem;
+	}
+}
+
+
+@media(max-width: 330px) {
+	.stats {
+		flex-direction: column;
+	}
+}
+
+@media(max-width: 576px) {
+	.simulation-container {
+		flex-direction: column-reverse;
+	}
+
+	.list-group {
+		flex-direction: row;
+		overflow: scroll;
+	}
+
+	.list-group-item {
+		padding: 0.3rem;
+	}
+
+		.list-group-item:nth-child(2n+1) {
+			background: #222;
+			border-color: #444;
+		}
+
+	.results {
+		justify-content: center;
+		max-width: 90%;
+	}
+
+		.results h2 {
+			font-size: 1.3rem;
+		}
+
+		.results small {
+			font-size: 0.9rem;
+		}
+
+	.list-swipe-info {
+		display: block;
+		text-align: center;
+		margin: 0.7rem 0;
+		color: #555;
+		font-size: 0.8rem;
 	}
 }

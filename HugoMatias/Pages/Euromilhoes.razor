@@ -6,27 +6,30 @@
     <h1>Simulador <img class="logo" src="/euromilhoes.svg" /></h1>
 
     <div class="simulation-container">
-        <div class="settings col-6 pe-3 d-flex flex-column align-items-center">
+        <div class="settings col-md-6 col pe-3 d-flex flex-column align-items-center">
             <label class="form-label" for="year-mult">Tempo: <span class="label-desc"><strong>@_yearMult</strong> @(_yearMult > 1 ? "anos" : "ano")</span></label>
-            <input class="form-control" id="year-mult" type="range" min="1" max="50" step="1" @bind-value="_yearMult" @bind-value:event="oninput" />
+            <input class="form-range" id="year-mult" type="range" min="1" max="50" step="1" @bind-value="_yearMult" @bind-value:event="oninput" />
             <div class="form-check mt-3">
                 <input class="form-check-input" id="cumulative" type="checkbox" @bind-value="_isCumulative" checked="@_isCumulative" />
                 <label class="form-check-label" for="cumulative">Cumulativo</label>
             </div>
             <button type="button" class="simulate-btn btn btn-primary" @onclick="async () => await SimulateBatch(_yearlyDraws * _yearMult, _baseNums, _baseStars)">Simular</button>
-            <div class="stats">
-                <span>Números: <h3>@($"{_baseNums} / {_nums}")</h3></span>
-                <span>Estrelas: <h3>@($"{_baseStars} / {_stars}")</h3></span>
-                <span>Preço p/ Aposta: <h3>@_baseFee.ToString("C2")</h3></span>
+            <div class="stats row">
+                <div class="col-sm-6 col">
+                    <span>Números: <h3>@($"{_baseNums} / {_nums}")</h3></span>
+                    <span>Preço p/ Aposta: <h3>@_baseFee.ToString("C2")</h3></span>
+                </div>
+                <div class="col-sm-6 col">
+                    <span>Estrelas: <h3>@($"{_baseStars} / {_stars}")</h3></span>
+                    <span>Sorteios p/ Ano: <h3>@($"{_yearlyDraws}")</h3></span>
+                </div>
                 <span>Prémios:<br /> <a href="https://www.euro-millions.com/pt/premios">Montantes Médios</a></span>
-                <br />
-                <span>Sorteios p/ Ano: <h3>@($"{_yearlyDraws}")</h3><small>2 p/ Semana</small></span>
                 <br />
                 <br />
                 <small>De momento não consideramos apostas múltipas para sorteio simulado.</small>
             </div>
         </div>
-        <div class="col-6 ps-3">
+        <div class="results col-md-6 col ps-3">
             @if (_simulatedPrizes.Count > 0)
             {
                 <ul class="list-group">
@@ -35,6 +38,7 @@
                         <li class="list-group-item @(GetPrizeTextColor(draw.Key, draw.Value))">@(string.IsNullOrEmpty(draw.Key) ? "Não Premiado" : draw.Key):  <strong class="ms-3">@(draw.Value)</strong></li>
                     }
                 </ul>
+                <span class="list-swipe-info">Deslize para ver mais <span class="fa-solid fa-hand-point-right"></span></span>
                 <br />
                 <h2><small>Total Gastos:</small> @_totalSpent.ToString("C2")</h2>
                 <h2><small>Total Prémios:</small> @_totalEarnings.ToString("C2")</h2>
@@ -53,14 +57,14 @@
         <figure>
             <blockquote class="blockquote">
                 <p>
-                    "A Lottery is a Taxation,<br/>
-                    Upon all the Fools in Creation;<br/>
-                    And Heaven be prais’d,<br/>
-                    It is easily rais’d,<br/>
-                    Credulity’s always in Fashion:<br/>
-                    For, Folly’s a Fund,<br/>
-                    Will never lose Ground,<br/>
-                    While Fools are so rife in the Nation."<br/>
+                    "A Lottery is a Taxation,<br />
+                    Upon all the Fools in Creation;<br />
+                    And Heaven be prais’d,<br />
+                    It is easily rais’d,<br />
+                    Credulity’s always in Fashion:<br />
+                    For, Folly’s a Fund,<br />
+                    Will never lose Ground,<br />
+                    While Fools are so rife in the Nation."<br />
 
                 </p>
             </blockquote>
