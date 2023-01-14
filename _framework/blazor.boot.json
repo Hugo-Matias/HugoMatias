@@ -7,7 +7,7 @@
   "linkerEnabled": true,
   "resources": {
     "assembly": {
-      "HugoMatias.dll": "sha256-WOjTz+78oTVWsRb2BiQVekFG+CwAx2ZVaE613y13Fco=",
+      "HugoMatias.dll": "sha256-v0XR35EQfrIzoY1oX4YzKcwvHddgcia0V0zI1QGnpOo=",
       "Microsoft.AspNetCore.Components.dll": "sha256-y+WXTQ9KqmuJrus5Kw89dMO48esvuQFnPjn5w3ZxmnE=",
       "Microsoft.AspNetCore.Components.Web.dll": "sha256-CqjgLzzZwv7F4s+S4K1bhK5MxHLAwzuuHeDyIpP2bQg=",
       "Microsoft.AspNetCore.Components.WebAssembly.dll": "sha256-2Jg3mQhCSyqkofbgXHMRw0whL7fAl07+VKYd0lApk7I=",
