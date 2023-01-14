@@ -42,11 +42,7 @@
                 <br />
                 <h2><small>Total Gastos:</small> @_totalSpent.ToString("C2")</h2>
                 <h2><small>Total Prémios:</small> @_totalEarnings.ToString("C2")</h2>
-                if (_isCumulative)
-                {
-                    <h2><small>Anos Simulados:</small> @_currentYear</h2>
-                }
-
+                <h2 class="@(_isCumulative ? "show" : "hide")"><small>Anos Simulados:</small> @_currentYear</h2>
             }
         </div>
     </div>
@@ -103,6 +99,11 @@
     private bool _isCumulative;
     private bool _isSimulating;
 
+    protected override void OnParametersSet()
+    {
+        InitializePrizeList();
+    }
+
     private async Task<EMKeyModel> GenerateKey(int numbers, int stars)
     {
         var key = new EMKeyModel();
@@ -131,13 +132,38 @@
 
     private async Task SimulateBatch(int amount, int numbers, int stars)
     {
-
         ResetVariables();
-        _currentYear += _yearMult;
 
-        for (int i = 0; i < amount; i++)
+        // Since simulating until Jackpot is a time consuming and demanding operation, 
+        // It's only enabled by code changing the method variables. For the brave of heart only!
+        var untilJackpot = false;
+
+        if (!untilJackpot)
         {
-            await SimulateDraw(numbers, stars);
+            _currentYear += _yearMult;
+
+            for (int i = 0; i < amount; i++)
+            {
+                await SimulateDraw(numbers, stars);
+            }
+        }
+        else
+        {
+            bool hasJackpot = false;
+            int currentDraw = 0;
+            Console.WriteLine(DateTime.Now);
+            do
+            {
+                var entry = await SimulateDraw(numbers, stars);
+                hasJackpot = entry.Prize == "5+2";
+                currentDraw++;
+                if (currentDraw % 104 == 0)
+                {
+                    _currentYear++;
+                    Console.WriteLine($"Ano: {_currentYear} | Sorteio: {currentDraw}");
+                }
+            } while (!hasJackpot);
+            Console.WriteLine(DateTime.Now);
         }
 
         CalculateEarnings();
@@ -145,7 +171,7 @@
         _isSimulating = false;
     }
 
-    private async Task SimulateDraw(int numbers, int stars, EMKeyModel? entry = null)
+    private async Task<EMKeyModel> SimulateDraw(int numbers, int stars, EMKeyModel? entry = null)
     {
         var winningKey = await GenerateKey(_baseNums, _baseStars);
         var entryKey = entry ?? await GenerateKey(numbers, stars);
@@ -159,20 +185,14 @@
         else entryKey.Prize = string.Empty;
 
         _simulatedDraws.Add(winningKey, entryKey);
+        return entryKey;
     }
 
     private async Task<Dictionary<string, int>> CountPrizes()
     {
-        Dictionary<string, int> prizes;
+        var prizes = _simulatedPrizes;
 
-        if (_isCumulative && _simulatedPrizes.Count > 1) prizes = _simulatedPrizes;
-        else
-        {
-            prizes = new Dictionary<string, int>();
-            foreach (var prize in _prizes) { prizes.Add(prize.Key, 0); }
-        }
-
-        foreach (var draw in _simulatedDraws) { prizes[draw.Value.Prize]++; }
+        foreach (var draw in _simulatedDraws) { prizes[draw.Value.Prize]++; prizes["TOTAL"]++; }
 
         return prizes;
     }
@@ -192,14 +212,22 @@
 
         if (_isCumulative && !reset) return;
 
-        _simulatedPrizes.Clear();
+        InitializePrizeList();
         _totalEarnings = _totalSpent = _currentYear = 0;
+    }
+
+    private void InitializePrizeList()
+    {
+        _simulatedPrizes.Clear();
+        foreach (var prize in _prizes) { _simulatedPrizes.Add(prize.Key, 0); };
+        _simulatedPrizes.Add("TOTAL", 0);
     }
 
     private string GetPrizeTextColor(string prize, int amount)
     {
-        if (prize == string.Empty) return "nao-premio";
-        if (amount > 0) return "premio";
+        if (prize == string.Empty) return "stats-no-prize";
+        if (prize == "TOTAL") return "stats-total";
+        if (amount > 0) return "stats-prize";
         return string.Empty;
     }
 }

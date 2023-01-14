@@ -93,12 +93,16 @@ figure {
 		text-align: center;
 	}
 
-.nao-premio {
+.stats-no-prize {
 	color: red;
 }
 
-.premio {
+.stats-prize {
 	color: var(--site-primary);
+}
+
+.stats-total {
+	color: orange;
 }
 
 .stats {
@@ -129,6 +133,14 @@ figure {
 		margin-top: 1.3rem;
 		font-size: 0.8rem;
 	}
+
+.show {
+	opacity: 1;
+}
+
+.hide {
+	opacity: 0;
+}
 
 .list-swipe-info {
 	display: none;
